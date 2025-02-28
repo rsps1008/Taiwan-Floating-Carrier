@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/floating_widget_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/floating_widget_background"
+    android:orientation="vertical"
+
+    android:paddingBottom="1dp"
+    android:paddingTop="4dp"
+    android:paddingStart="25dp"
+    android:paddingEnd="25dp">
+
+
+    <!-- 放置載具文字和關閉按鈕的水平 LinearLayout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"> <!-- 垂直置中 -->
+
+        <ImageButton
+            android:id="@+id/setting_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_wrench"
+            android:background="@android:color/transparent"
+            android:contentDescription="設定載具條碼"
+            android:layout_alignParentRight="true"
+            android:layout_toLeftOf="@+id/close_btn"
+            android:padding="8dp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="載具"
+            android:gravity="center"
+            android:textSize="32sp"
+            android:paddingBottom="0dp"
+             />
+
+        <ImageView
+            android:id="@+id/close_btn"
+            android:layout_width="29dp"
+            android:layout_height="29dp"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            />
+
+    </LinearLayout>
+
+    <!-- 控制文字和條碼之間的距離 -->
+
+
+    <ImageView
+        android:id="@+id/barcode_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="Barcode"
+        android:layout_marginTop="-12dp"/>
+
+
+    <TextView
+        android:id="@+id/vehicle_number_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="載具條碼"
+        android:textSize="24sp"
+        android:paddingTop="0dp"
+        android:layout_marginTop="-10dp"/>
+</LinearLayout>

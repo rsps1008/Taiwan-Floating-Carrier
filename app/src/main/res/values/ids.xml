@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="close_btn" type="id" />
+    <item name="textView" type="id" />
+    <item name="floating_widget_root" type="id" />
+    <item name="barcode_image" type="id" />
+</resources>

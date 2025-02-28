@@ -1,0 +1,33 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/edit_text_vehicle_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:hint="輸入載具號碼"
+        android:minHeight="48dp"
+        android:padding="10dp" />
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/edit_text_vehicle_number"
+        android:layout_centerHorizontal="true"
+        android:text="儲存" />
+
+    <Button
+        android:id="@+id/start_service_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/save_button"
+        android:layout_centerHorizontal="true"
+        android:text="啟動載具條碼浮動視窗" />
+</RelativeLayout>
