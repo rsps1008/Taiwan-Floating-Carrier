@@ -22,6 +22,10 @@ import kotlin.math.abs
 
 class FloatingViewService : Service() {
 
+    companion object {
+        const val ACTION_UPDATE_SETTINGS = "com.rsps1008.floatingcarrier.action.UPDATE_SETTINGS"
+    }
+
     private var windowManager: WindowManager? = null
     private var floatingView: View? = null
     private var isBarcodeVisible = true  // 記錄條碼是否可見
@@ -33,6 +37,13 @@ class FloatingViewService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_UPDATE_SETTINGS) {
+            refreshFromPrefs()
+        }
+        return START_STICKY
     }
 
     override fun onCreate() {
@@ -68,7 +79,7 @@ class FloatingViewService : Service() {
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         expandedWidthPx = (screenWidth * 0.8).toInt()
-        bubbleSizePx = (displayMetrics.density * 56).toInt()
+        bubbleSizePx = (displayMetrics.density * 64).toInt()
 
         // 設定懸浮窗寬度為螢幕寬度的80%
         layoutParams = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -93,10 +104,12 @@ class FloatingViewService : Service() {
         val sharedPref = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
         layoutParams.x = sharedPref.getInt("lastXPosition", 0)
         layoutParams.y = sharedPref.getInt("lastYPosition", 100)
+        val expandedOpacity = sharedPref.getInt("expandedOpacity", 100).coerceIn(50, 100)
 
         // 加入懸浮視窗
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         windowManager?.addView(floatingView, layoutParams)
+        floatingView?.alpha = expandedOpacity / 100f
 
         val bubbleContainer = floatingView?.findViewById<View>(R.id.bubble_container)
         val bubbleIcon = floatingView?.findViewById<View>(R.id.bubble_icon)
@@ -243,12 +256,33 @@ class FloatingViewService : Service() {
         vehicleNumberTextView?.text = finalVehicleNumber
     }
 
+    private fun refreshFromPrefs() {
+        val sharedPref = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
+        val expandedOpacity = sharedPref.getInt("expandedOpacity", 100).coerceIn(50, 100)
+        if (isBubbleCollapsed) {
+            floatingView?.alpha = 1f
+        } else {
+            floatingView?.alpha = expandedOpacity / 100f
+        }
+
+        val vehicleNumber = sharedPref.getString("vehicleNumber", null)
+        val finalVehicleNumber = vehicleNumber ?: "預設載具號碼"
+        val barcodeImageView = floatingView?.findViewById<ImageView>(R.id.barcode_image)
+        val vehicleNumberTextView = floatingView?.findViewById<TextView>(R.id.vehicle_number_text)
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val barcodeWidth = (screenWidth * 0.8).toInt()
+        barcodeImageView?.setImageBitmap(generateBarcode(finalVehicleNumber, barcodeWidth, (screenWidth / 11 * 2)))
+        vehicleNumberTextView?.text = finalVehicleNumber
+    }
+
     private fun collapseToBubble(bubbleContainer: View?, contentContainer: View?) {
         if (isBubbleCollapsed) return
         contentContainer?.visibility = View.GONE
         bubbleContainer?.visibility = View.VISIBLE
         layoutParams.width = bubbleSizePx
         layoutParams.height = bubbleSizePx
+        floatingView?.alpha = 1f
         windowManager?.updateViewLayout(floatingView, layoutParams)
         isBubbleCollapsed = true
     }
@@ -259,6 +293,8 @@ class FloatingViewService : Service() {
         contentContainer?.visibility = View.VISIBLE
         layoutParams.width = expandedWidthPx
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        floatingView?.alpha = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
+            .getInt("expandedOpacity", 100).coerceIn(50, 100) / 100f
         windowManager?.updateViewLayout(floatingView, layoutParams)
         isBubbleCollapsed = false
         isDragging = false

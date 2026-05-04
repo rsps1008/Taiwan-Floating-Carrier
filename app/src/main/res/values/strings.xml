@@ -4,10 +4,14 @@
     <string name="main_subtitle">先儲存載具號碼，再啟動浮動視窗，畫面會即時更新。</string>
     <string name="vehicle_number_label">載具號碼</string>
     <string name="vehicle_number_hint">請輸入載具號碼</string>
-    <string name="vehicle_number_tip">格式儲存後，浮動視窗會立即刷新成最新條碼。</string>
-    <string name="save_button">儲存設定</string>
+    <string name="vehicle_number_tip">請輸入 7 碼，系統會自動補上前面的 /。</string>
     <string name="start_floating_button">啟動浮動視窗</string>
     <string name="request_overlay_button">授與懸浮權限並啟動</string>
+    <string name="opacity_label">攤開透明度</string>
+    <string name="opacity_hint">拖曳滑桿可立即套用透明度，不用另外儲存。</string>
+    <string name="opacity_value_100">100%</string>
+    <string name="vehicle_short_hint">不符合載具長度，還差 %1$d 碼。</string>
+    <string name="vehicle_applied_hint">載具長度符合</string>
     <string name="main_footer">第一次開啟若尚未授與懸浮視窗權限，先會停在這個主畫面，按右側按鈕再去開權限。</string>
     <string name="floating_title">載具條碼</string>
     <string name="floating_setting">開啟設定</string>

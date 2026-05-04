@@ -15,6 +15,7 @@
 
     <color name="floating_shell">#F9FBFF</color>
     <color name="floating_shadow">#1A102033</color>
+    <color name="error_text">#D32F2F</color>
 
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

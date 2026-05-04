@@ -5,14 +5,24 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.Button
-import android.widget.EditText
+import android.widget.SeekBar
+import android.widget.TextView
+import android.view.View
+import com.google.android.material.textfield.TextInputEditText
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CODE_OVERLAY_PERMISSION = 1001
+    private val settingsHandler = Handler(Looper.getMainLooper())
+    private var vehicleApplyRunnable: Runnable? = null
+    private var opacityApplyRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,19 +42,99 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sharedPref = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
-        val editTextVehicleNumber = findViewById<EditText>(R.id.edit_text_vehicle_number)
-        val saveButton = findViewById<Button>(R.id.save_button)
+        val editTextVehicleNumber = findViewById<TextInputEditText>(R.id.edit_text_vehicle_number)
+        val vehicleHintText = findViewById<TextView>(R.id.vehicle_number_hint_text)
+        val opacitySeekBar = findViewById<SeekBar>(R.id.opacity_seekbar)
+        val opacityValueText = findViewById<TextView>(R.id.opacity_value_text)
         val startButton = findViewById<Button>(R.id.start_service_button)
         val savedVehicleNumber = sharedPref.getString("vehicleNumber", "")
-        editTextVehicleNumber.setText(savedVehicleNumber)
+        val savedOpacity = sharedPref.getInt("expandedOpacity", 100)
+        editTextVehicleNumber.setText(savedVehicleNumber?.removePrefix("/") ?: "")
+        opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
+        opacityValueText.text = "${savedOpacity.coerceIn(50, 100)}%"
 
-        saveButton.setOnClickListener {
-            val vehicleNumber = editTextVehicleNumber.text.toString()
-            val editor = sharedPref.edit()
-            editor.putString("vehicleNumber", vehicleNumber)
-            editor.apply()  // 儲存載具號碼
-            updateFloatingService()
+        fun currentVehicleInput(): String = editTextVehicleNumber.text?.toString()?.trim().orEmpty()
+        fun updateVehicleHint() {
+            val text = currentVehicleInput()
+            val remaining = 7 - text.length
+            if (remaining > 0) {
+                vehicleHintText.setTextColor(getColor(R.color.error_text))
+                vehicleHintText.text = getString(R.string.vehicle_short_hint, remaining)
+                vehicleHintText.visibility = View.VISIBLE
+            } else {
+                vehicleHintText.setTextColor(getColor(R.color.text_secondary))
+                vehicleHintText.text = getString(R.string.vehicle_applied_hint)
+                vehicleHintText.visibility = View.VISIBLE
+            }
         }
+        fun persistVehicleIfReady() {
+            val raw = currentVehicleInput().take(7)
+            if (raw.length < 7) {
+                updateVehicleHint()
+                return
+            }
+            val vehicleNumber = "/$raw"
+            sharedPref.edit()
+                .putString("vehicleNumber", vehicleNumber)
+                .apply()
+            vehicleHintText.setTextColor(getColor(R.color.text_secondary))
+            vehicleHintText.text = getString(R.string.vehicle_applied_hint)
+            vehicleHintText.visibility = View.VISIBLE
+            if (Settings.canDrawOverlays(this)) {
+                startFloatingService(action = FloatingViewService.ACTION_UPDATE_SETTINGS)
+            }
+        }
+
+        updateVehicleHint()
+
+        vehicleApplyRunnable = Runnable { persistVehicleIfReady() }
+        editTextVehicleNumber.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable?) {
+                settingsHandler.removeCallbacks(vehicleApplyRunnable!!)
+                val current = currentVehicleInput()
+                val remaining = 7 - current.length
+                if (remaining > 0) {
+                    vehicleHintText.setTextColor(getColor(R.color.error_text))
+                    vehicleHintText.text = getString(R.string.vehicle_short_hint, remaining)
+                    vehicleHintText.visibility = View.VISIBLE
+                    return
+                }
+                vehicleHintText.setTextColor(getColor(R.color.text_secondary))
+                vehicleHintText.text = getString(R.string.vehicle_applied_hint)
+                vehicleHintText.visibility = View.VISIBLE
+                settingsHandler.postDelayed(vehicleApplyRunnable!!, 700)
+            }
+        })
+
+        opacityApplyRunnable = Runnable {
+            val selectedOpacity = 50 + (opacitySeekBar.progress.coerceIn(0, 5) * 10)
+            sharedPref.edit()
+                .putInt("expandedOpacity", selectedOpacity)
+                .apply()
+            opacityValueText.text = getString(R.string.opacity_value_100).replace("100", selectedOpacity.toString())
+            if (Settings.canDrawOverlays(this)) {
+                startFloatingService(action = FloatingViewService.ACTION_UPDATE_SETTINGS)
+            }
+        }
+
+        opacitySeekBar.max = 5
+        opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
+        opacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val opacity = 50 + (progress.coerceIn(0, 5) * 10)
+                opacityValueText.text = "$opacity%"
+                settingsHandler.removeCallbacks(opacityApplyRunnable!!)
+                settingsHandler.postDelayed(opacityApplyRunnable!!, 700)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+        })
 
         startButton.text = if (hasOverlayPermission) {
             getString(R.string.start_floating_button)
@@ -83,17 +173,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startFloatingService() {
+    private fun startFloatingService(action: String? = null) {
         val intent = Intent(this, FloatingViewService::class.java)
+        if (action != null) {
+            intent.action = action
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)
         }
-    }
-
-    private fun updateFloatingService() {
-        stopService(Intent(this, FloatingViewService::class.java))
-        startFloatingService()
     }
 }
