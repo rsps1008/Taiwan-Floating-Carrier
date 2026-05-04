@@ -12,7 +12,6 @@
     <string name="opacity_value_100">100%</string>
     <string name="vehicle_short_hint">不符合載具長度，還差 %1$d 碼。</string>
     <string name="vehicle_applied_hint">載具長度符合</string>
-    <string name="main_footer">第一次開啟若尚未授與懸浮視窗權限，先會停在這個主畫面，按右側按鈕再去開權限。</string>
     <string name="floating_title">載具條碼</string>
     <string name="floating_setting">開啟設定</string>
     <string name="floating_close">關閉浮動視窗</string>
