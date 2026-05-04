@@ -25,7 +25,10 @@ class FloatingViewService : Service() {
     private var windowManager: WindowManager? = null
     private var floatingView: View? = null
     private var isBarcodeVisible = true  // 記錄條碼是否可見
+    private var isBubbleCollapsed = false
     private lateinit var layoutParams: WindowManager.LayoutParams
+    private var expandedWidthPx: Int = 0
+    private var bubbleSizePx: Int = 0
     private var isDragging = false       // 判斷是否正在拖曳
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -64,11 +67,13 @@ class FloatingViewService : Service() {
         // 取得螢幕寬度
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
+        expandedWidthPx = (screenWidth * 0.8).toInt()
+        bubbleSizePx = (displayMetrics.density * 56).toInt()
 
         // 設定懸浮窗寬度為螢幕寬度的80%
         layoutParams = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams(
-                (screenWidth * 0.8).toInt(),
+                expandedWidthPx,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
@@ -76,7 +81,7 @@ class FloatingViewService : Service() {
             )
         } else {
             WindowManager.LayoutParams(
-                (screenWidth * 0.8).toInt(),
+                expandedWidthPx,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_PHONE,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
@@ -93,22 +98,33 @@ class FloatingViewService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         windowManager?.addView(floatingView, layoutParams)
 
-        // 設定拖曳功能
-        floatingView?.setOnTouchListener(object : View.OnTouchListener {
+        val bubbleContainer = floatingView?.findViewById<View>(R.id.bubble_container)
+        val bubbleIcon = floatingView?.findViewById<View>(R.id.bubble_icon)
+        val contentContainer = floatingView?.findViewById<View>(R.id.content_container)
+        val headerContainer = floatingView?.findViewById<View>(R.id.header_container)
+        val barcodeImageView = floatingView?.findViewById<ImageView>(R.id.barcode_image)
+        val vehicleNumberTextView = floatingView?.findViewById<TextView>(R.id.vehicle_number_text)
+
+        bubbleContainer?.setOnClickListener {
+            expandFromBubble(bubbleContainer, contentContainer)
+        }
+        val bubbleTouchListener = object : View.OnTouchListener {
             private var initialX: Int = 0
             private var initialY: Int = 0
             private var touchX: Float = 0f
             private var touchY: Float = 0f
-            private val dragThreshold = 10  // 拖曳移動門檻
+            private var isBubbleDragging = false
+            private val dragThreshold = 10
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
+                if (!isBubbleCollapsed) return false
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         initialX = layoutParams.x
                         initialY = layoutParams.y
                         touchX = event.rawX
                         touchY = event.rawY
-                        isDragging = false
+                        isBubbleDragging = false
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -118,19 +134,14 @@ class FloatingViewService : Service() {
                             layoutParams.x = initialX + deltaX.toInt()
                             layoutParams.y = initialY + deltaY.toInt()
                             windowManager?.updateViewLayout(floatingView, layoutParams)
-                            isDragging = true
+                            isBubbleDragging = true
                         }
                         return true
                     }
                     MotionEvent.ACTION_UP -> {
-                        if (!isDragging) {
-                            // 非拖曳則切換條碼顯示/隱藏
-                            toggleBarcodeVisibility(
-                                floatingView?.findViewById(R.id.barcode_image),
-                                floatingView?.findViewById(R.id.vehicle_number_text)
-                            )
+                        if (!isBubbleDragging) {
+                            expandFromBubble(bubbleContainer, contentContainer)
                         }
-                        // 儲存目前位置
                         val editor = sharedPref.edit()
                         editor.putInt("lastXPosition", layoutParams.x)
                         editor.putInt("lastYPosition", layoutParams.y)
@@ -140,6 +151,69 @@ class FloatingViewService : Service() {
                 }
                 return false
             }
+        }
+        bubbleContainer?.setOnTouchListener(bubbleTouchListener)
+        bubbleIcon?.setOnTouchListener(bubbleTouchListener)
+
+        fun createExpandedDragListener(onTap: (() -> Unit)?): View.OnTouchListener {
+            return object : View.OnTouchListener {
+                private var initialX: Int = 0
+                private var initialY: Int = 0
+                private var touchX: Float = 0f
+                private var touchY: Float = 0f
+                private var isViewDragging = false
+                private val dragThreshold = 10
+
+                override fun onTouch(v: View, event: MotionEvent): Boolean {
+                    if (isBubbleCollapsed) return false
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            initialX = layoutParams.x
+                            initialY = layoutParams.y
+                            touchX = event.rawX
+                            touchY = event.rawY
+                            isViewDragging = false
+                            return true
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            val deltaX = event.rawX - touchX
+                            val deltaY = event.rawY - touchY
+                            if (abs(deltaX) > dragThreshold || abs(deltaY) > dragThreshold) {
+                                layoutParams.x = initialX + deltaX.toInt()
+                                layoutParams.y = initialY + deltaY.toInt()
+                                windowManager?.updateViewLayout(floatingView, layoutParams)
+                                isViewDragging = true
+                            }
+                            return true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            if (!isViewDragging) {
+                                onTap?.invoke()
+                            }
+                            val editor = sharedPref.edit()
+                            editor.putInt("lastXPosition", layoutParams.x)
+                            editor.putInt("lastYPosition", layoutParams.y)
+                            editor.apply()
+                            return true
+                        }
+                    }
+                    return false
+                }
+            }
+        }
+
+        headerContainer?.setOnTouchListener(createExpandedDragListener {
+            collapseToBubble(bubbleContainer, contentContainer)
+        })
+
+        contentContainer?.setOnTouchListener(createExpandedDragListener(null))
+
+        barcodeImageView?.setOnTouchListener(createExpandedDragListener {
+            collapseToBubble(bubbleContainer, contentContainer)
+        })
+
+        vehicleNumberTextView?.setOnTouchListener(createExpandedDragListener {
+            collapseToBubble(bubbleContainer, contentContainer)
         })
 
         // 關閉按鈕事件
@@ -162,19 +236,32 @@ class FloatingViewService : Service() {
         }
 
         // 生成條碼與顯示載具號碼
-        val barcodeImageView = floatingView?.findViewById<ImageView>(R.id.barcode_image)
-        val vehicleNumberTextView = floatingView?.findViewById<TextView>(R.id.vehicle_number_text)
         val barcodeWidth = (screenWidth * 0.8).toInt()
         val vehicleNumber: String? = sharedPref.getString("vehicleNumber", null)
         val finalVehicleNumber = vehicleNumber ?: "預設載具號碼"
         barcodeImageView?.setImageBitmap(generateBarcode(finalVehicleNumber, barcodeWidth, (screenWidth / 11 * 2)))
         vehicleNumberTextView?.text = finalVehicleNumber
+    }
 
-        // "載具" 文字點擊事件（不影響拖曳）
-        val textView = floatingView?.findViewById<TextView>(R.id.textView)
-        textView?.setOnTouchListener { _, event ->
-            floatingView?.onTouchEvent(event) ?: false
-        }
+    private fun collapseToBubble(bubbleContainer: View?, contentContainer: View?) {
+        if (isBubbleCollapsed) return
+        contentContainer?.visibility = View.GONE
+        bubbleContainer?.visibility = View.VISIBLE
+        layoutParams.width = bubbleSizePx
+        layoutParams.height = bubbleSizePx
+        windowManager?.updateViewLayout(floatingView, layoutParams)
+        isBubbleCollapsed = true
+    }
+
+    private fun expandFromBubble(bubbleContainer: View?, contentContainer: View?) {
+        if (!isBubbleCollapsed) return
+        bubbleContainer?.visibility = View.GONE
+        contentContainer?.visibility = View.VISIBLE
+        layoutParams.width = expandedWidthPx
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        windowManager?.updateViewLayout(floatingView, layoutParams)
+        isBubbleCollapsed = false
+        isDragging = false
     }
 
     // 切換條碼顯示/隱藏
@@ -190,6 +277,7 @@ class FloatingViewService : Service() {
         }
         windowManager?.updateViewLayout(floatingView, layoutParams)
         isBarcodeVisible = !isBarcodeVisible
+        isDragging = false
     }
 
     override fun onDestroy() {

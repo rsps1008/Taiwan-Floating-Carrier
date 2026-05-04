@@ -9,12 +9,30 @@
     android:orientation="vertical"
     android:padding="1dp">
 
+    <FrameLayout
+        android:id="@+id/bubble_container"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_bubble_surface"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/bubble_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/app_name"
+            android:padding="8dp"
+            android:src="@mipmap/ic_launcher_round" />
+    </FrameLayout>
+
     <LinearLayout
+        android:id="@+id/content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/header_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_floating_header"
