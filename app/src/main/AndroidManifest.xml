@@ -2,6 +2,7 @@
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
     <application
         android:allowBackup="true"
@@ -9,9 +10,9 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity" android:theme="@style/TransparentTheme" android:exported="true">
+        <activity android:name="com.rsps1008.floatingcarrier.MainActivity" android:theme="@style/TransparentTheme" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,9 +22,16 @@
 
 
         <!-- 註冊浮動視窗服務 -->
-        <service android:name=".FloatingViewService"
+        <service
+            android:name="com.rsps1008.floatingcarrier.FloatingViewService"
+            android:foregroundServiceType="specialUse"
             android:exported="false"
-            android:permission="android.permission.SYSTEM_ALERT_WINDOW"/>
+            android:permission="android.permission.SYSTEM_ALERT_WINDOW">
+            <!-- Android 14+ specialUse FGS subtype declaration -->
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="floating overlay barcode widget" />
+        </service>
     </application>
 
 </manifest>

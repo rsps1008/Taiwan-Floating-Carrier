@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.taiwanbarcodefloating'
+    namespace 'com.rsps1008.floatingcarrier'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.taiwanbarcode.floating"
+        applicationId "com.rsps1008.floatingcarrier"
         minSdk 28
         targetSdk 35
         versionCode 1

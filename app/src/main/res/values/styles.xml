@@ -10,7 +10,7 @@
     </style>
 
     <!-- 正常主題，用於顯示設定介面 -->
-    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/brand_primary</item>
         <item name="colorOnPrimary">@color/text_inverse</item>
         <item name="colorPrimaryContainer">@color/surface_card_alt</item>

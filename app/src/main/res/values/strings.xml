@@ -7,7 +7,8 @@
     <string name="vehicle_number_tip">格式儲存後，浮動視窗會立即刷新成最新條碼。</string>
     <string name="save_button">儲存設定</string>
     <string name="start_floating_button">啟動浮動視窗</string>
-    <string name="main_footer">若尚未授與懸浮視窗權限，系統會先跳出權限頁面。</string>
+    <string name="request_overlay_button">授與懸浮權限並啟動</string>
+    <string name="main_footer">第一次開啟若尚未授與懸浮視窗權限，先會停在這個主畫面，按右側按鈕再去開權限。</string>
     <string name="floating_title">載具條碼</string>
     <string name="floating_setting">開啟設定</string>
     <string name="floating_close">關閉浮動視窗</string>
