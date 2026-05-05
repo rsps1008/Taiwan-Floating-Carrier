@@ -24,6 +24,9 @@ class FloatingViewService : Service() {
 
     companion object {
         const val ACTION_UPDATE_SETTINGS = "com.rsps1008.floatingcarrier.action.UPDATE_SETTINGS"
+        const val PREF_KEY_CLOSE_ACTION = "closeAction"
+        const val PREF_VALUE_CLOSE_FLOATING = "close_floating"
+        const val PREF_VALUE_CLOSE_APP = "close_app"
     }
 
     private var windowManager: WindowManager? = null
@@ -48,6 +51,7 @@ class FloatingViewService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        AppRuntimeState.isFloatingServiceRunning = true
         // 建立前景服務通知
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "floating_view_service_channel"
@@ -232,11 +236,11 @@ class FloatingViewService : Service() {
         // 關閉按鈕事件
         val closeBtn = floatingView?.findViewById<ImageView>(R.id.close_btn)
         closeBtn?.setOnClickListener {
+            val closeAction = sharedPref.getString(PREF_KEY_CLOSE_ACTION, PREF_VALUE_CLOSE_FLOATING)
             stopSelf()
-            val editor = sharedPref.edit()
-            editor.putBoolean("isFirstTime", true)
-            editor.commit()
-            System.exit(0)
+            if (closeAction == PREF_VALUE_CLOSE_APP) {
+                android.os.Process.killProcess(android.os.Process.myPid())
+            }
         }
 
         // 設定按鈕（板手 icon）的點擊事件，並傳入 showUI=true 以顯示設定介面
@@ -318,6 +322,7 @@ class FloatingViewService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        AppRuntimeState.isFloatingServiceRunning = false
         floatingView?.let { windowManager?.removeView(it) }
     }
 

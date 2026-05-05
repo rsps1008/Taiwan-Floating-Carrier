@@ -10,6 +10,10 @@
     <string name="opacity_label">攤開透明度</string>
     <string name="opacity_hint">拖曳滑桿可立即套用透明度，不用另外儲存。</string>
     <string name="opacity_value_100">100%</string>
+    <string name="close_action_label">叉叉按鈕動作</string>
+    <string name="close_action_hint">你可以決定浮動視窗右上角叉叉要關掉懸浮，還是直接結束整個 APP。</string>
+    <string name="close_action_close_floating">關閉懸浮視窗</string>
+    <string name="close_action_close_app">關閉整個 APP</string>
     <string name="vehicle_short_hint">不符合載具長度，還差 %1$d 碼。</string>
     <string name="vehicle_applied_hint">載具長度符合</string>
     <string name="floating_title">載具條碼</string>

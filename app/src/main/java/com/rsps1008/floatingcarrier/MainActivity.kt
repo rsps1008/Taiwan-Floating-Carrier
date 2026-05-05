@@ -12,6 +12,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.SeekBar
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.view.View
 import com.google.android.material.textfield.TextInputEditText
@@ -29,29 +30,52 @@ class MainActivity : AppCompatActivity() {
         // 檢查是否要顯示 UI，預設為 false（透明模式）
         val showUI = intent.getBooleanExtra("showUI", false)
         val hasOverlayPermission = Settings.canDrawOverlays(this)
+        val sharedPref = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
+        val isFloatingServiceRunning = AppRuntimeState.isFloatingServiceRunning
 
-        if (!showUI && hasOverlayPermission) {
-            // 舊流程：已授權就直接進透明模式啟動懸浮窗
-            startFloatingService()
-            finish()
+        if (!showUI) {
+            if (!hasOverlayPermission) {
+                requestOverlayPermission()
+                return
+            }
+            if (!isFloatingServiceRunning) {
+                // 首次啟動時直接進漂浮，不顯示主頁
+                startFloatingService()
+                finish()
+            } else {
+                // 服務已在執行時，點 APP icon 直接進設定頁
+                showSettingsUi(sharedPref, hasOverlayPermission)
+            }
             return
         }
 
-        // 首開沒權限，或是透過 wrench 進來時，都先顯示主畫面
+        // 透過 wrench 進來時，顯示主畫面
+        showSettingsUi(sharedPref, hasOverlayPermission)
+    }
+
+    private fun showSettingsUi(sharedPref: android.content.SharedPreferences, hasOverlayPermission: Boolean) {
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_main)
 
-        val sharedPref = getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE)
         val editTextVehicleNumber = findViewById<TextInputEditText>(R.id.edit_text_vehicle_number)
         val vehicleHintText = findViewById<TextView>(R.id.vehicle_number_hint_text)
         val opacitySeekBar = findViewById<SeekBar>(R.id.opacity_seekbar)
         val opacityValueText = findViewById<TextView>(R.id.opacity_value_text)
+        val closeActionGroup = findViewById<RadioGroup>(R.id.close_action_group)
         val startButton = findViewById<Button>(R.id.start_service_button)
         val savedVehicleNumber = sharedPref.getString("vehicleNumber", "")
         val savedOpacity = sharedPref.getInt("expandedOpacity", 100)
+        val savedCloseAction = sharedPref.getString(
+            FloatingViewService.PREF_KEY_CLOSE_ACTION,
+            FloatingViewService.PREF_VALUE_CLOSE_FLOATING
+        )
         editTextVehicleNumber.setText(savedVehicleNumber?.removePrefix("/") ?: "")
         opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
         opacityValueText.text = "${savedOpacity.coerceIn(50, 100)}%"
+        when (savedCloseAction) {
+            FloatingViewService.PREF_VALUE_CLOSE_APP -> closeActionGroup.check(R.id.close_action_close_app)
+            else -> closeActionGroup.check(R.id.close_action_close_floating)
+        }
 
         fun currentVehicleInput(): String = editTextVehicleNumber.text?.toString()?.trim().orEmpty()
         fun updateVehicleHint() {
@@ -136,6 +160,16 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
 
+        closeActionGroup.setOnCheckedChangeListener { _, checkedId ->
+            val selectedAction = when (checkedId) {
+                R.id.close_action_close_app -> FloatingViewService.PREF_VALUE_CLOSE_APP
+                else -> FloatingViewService.PREF_VALUE_CLOSE_FLOATING
+            }
+            sharedPref.edit()
+                .putString(FloatingViewService.PREF_KEY_CLOSE_ACTION, selectedAction)
+                .apply()
+        }
+
         startButton.text = if (hasOverlayPermission) {
             getString(R.string.start_floating_button)
         } else {
@@ -144,29 +178,36 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener {
             if (Settings.canDrawOverlays(this)) {
                 startFloatingService()
-                if (!showUI) {
-                    finish()
-                }
+                finish()
             } else {
-                val overlayIntent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivityForResult(overlayIntent, REQUEST_CODE_OVERLAY_PERMISSION)
+                requestOverlayPermission()
             }
         }
 
-        if (showUI && hasOverlayPermission) {
+        if (hasOverlayPermission) {
             startFloatingService()
         }
+    }
+
+    private fun requestOverlayPermission() {
+        val overlayIntent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$packageName")
+        )
+        startActivityForResult(overlayIntent, REQUEST_CODE_OVERLAY_PERMISSION)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_OVERLAY_PERMISSION) {
             if (Settings.canDrawOverlays(this)) {
-                startFloatingService()
-                if (!intent.getBooleanExtra("showUI", false)) {
+                if (intent.getBooleanExtra("showUI", false) || AppRuntimeState.isFloatingServiceRunning) {
+                    showSettingsUi(
+                        getSharedPreferences("com.rsps1008.floatingcarrier.PREFERENCE_FILE", Context.MODE_PRIVATE),
+                        true
+                    )
+                } else {
+                    startFloatingService()
                     finish()
                 }
             }
