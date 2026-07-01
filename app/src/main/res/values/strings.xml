@@ -7,6 +7,7 @@
     <string name="vehicle_number_tip">請輸入 7 碼，系統會自動補上前面的 /。</string>
     <string name="start_floating_button">啟動浮動視窗</string>
     <string name="request_overlay_button">授與懸浮權限並啟動</string>
+    <string name="request_overlay_settings_button">前往權限設定</string>
     <string name="opacity_label">攤開透明度</string>
     <string name="opacity_hint">拖曳滑桿可立即套用透明度，不用另外儲存。</string>
     <string name="opacity_value_100">100%</string>
@@ -21,4 +22,21 @@
     <string name="floating_close">關閉浮動視窗</string>
     <string name="floating_barcode">載具條碼圖片</string>
     <string name="floating_vehicle_placeholder">載具號碼</string>
+    <string name="overlay_permission_granted_hint">已取得重疊顯示權限</string>
+    <string name="overlay_prompt_title">需要重疊顯示權限</string>
+    <string name="overlay_prompt_message">要顯示浮動條碼與桌面小工具，請先允許「在其他應用程式上層顯示」。你可以先取消，或直接前往權限設定。</string>
+    <string name="overlay_prompt_cancel">取消</string>
+    <string name="overlay_prompt_dont_ask">不再提醒</string>
+    <string name="overlay_prompt_go_settings">前往權限設定</string>
+    <string name="reset_overlay_prompt_button">重設權限提醒</string>
+    <string name="overlay_prompt_section_label">權限提醒</string>
+    <string name="overlay_prompt_section_hint">如果你曾經選擇不再提醒，這裡可以重新開啟提示視窗。</string>
+    <string name="widget_click_label">小工具點擊動作</string>
+    <string name="widget_click_hint">你可以決定點擊桌面小工具時，要直接打開主畫面，還是複製載具號碼。</string>
+    <string name="widget_click_open_app">打開主畫面</string>
+    <string name="widget_click_copy_carrier">複製載具號碼</string>
+    <string name="widget_copy_success">已複製載具號碼</string>
+    <string name="widget_copy_empty">尚未設定載具號碼</string>
+    <string name="widget_description">顯示手機條碼的小工具</string>
+    <string name="widget_barcode_description">手機條碼圖片</string>
 </resources>

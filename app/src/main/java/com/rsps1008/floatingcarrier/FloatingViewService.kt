@@ -15,9 +15,6 @@ import android.view.*
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.common.BitMatrix
 import kotlin.math.abs
 
 class FloatingViewService : Service() {
@@ -254,10 +251,12 @@ class FloatingViewService : Service() {
 
         // 生成條碼與顯示載具號碼
         val barcodeWidth = (screenWidth * 0.8).toInt()
-        val vehicleNumber: String? = sharedPref.getString("vehicleNumber", null)
-        val finalVehicleNumber = vehicleNumber ?: "預設載具號碼"
-        barcodeImageView?.setImageBitmap(generateBarcode(finalVehicleNumber, barcodeWidth, (screenWidth / 11 * 2)))
-        vehicleNumberTextView?.text = finalVehicleNumber
+        val finalVehicleNumber = sharedPref.getString("vehicleNumber", null)
+        barcodeImageView?.setImageBitmap(
+            finalVehicleNumber?.let { CarrierBarcodeGenerator.generate(it, barcodeWidth, (screenWidth / 11 * 2)) }
+        )
+        vehicleNumberTextView?.text = finalVehicleNumber.orEmpty()
+        CarrierWidgetProvider.updateAllWidgets(this)
     }
 
     private fun refreshFromPrefs() {
@@ -269,15 +268,17 @@ class FloatingViewService : Service() {
             floatingView?.alpha = expandedOpacity / 100f
         }
 
-        val vehicleNumber = sharedPref.getString("vehicleNumber", null)
-        val finalVehicleNumber = vehicleNumber ?: "預設載具號碼"
+        val finalVehicleNumber = sharedPref.getString("vehicleNumber", null)
         val barcodeImageView = floatingView?.findViewById<ImageView>(R.id.barcode_image)
         val vehicleNumberTextView = floatingView?.findViewById<TextView>(R.id.vehicle_number_text)
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val barcodeWidth = (screenWidth * 0.8).toInt()
-        barcodeImageView?.setImageBitmap(generateBarcode(finalVehicleNumber, barcodeWidth, (screenWidth / 11 * 2)))
-        vehicleNumberTextView?.text = finalVehicleNumber
+        barcodeImageView?.setImageBitmap(
+            finalVehicleNumber?.let { CarrierBarcodeGenerator.generate(it, barcodeWidth, (screenWidth / 11 * 2)) }
+        )
+        vehicleNumberTextView?.text = finalVehicleNumber.orEmpty()
+        CarrierWidgetProvider.updateAllWidgets(this)
     }
 
     private fun collapseToBubble(bubbleContainer: View?, contentContainer: View?) {
@@ -326,64 +327,4 @@ class FloatingViewService : Service() {
         floatingView?.let { windowManager?.removeView(it) }
     }
 
-    // 根據自訂寬高生成條碼
-    private fun generateBarcode(content: String, width: Int, height: Int): android.graphics.Bitmap? {
-        return try {
-            val bitMatrix: BitMatrix = MultiFormatWriter().encode(content, BarcodeFormat.CODE_39, width, height)
-            val bitMatrixWidth = bitMatrix.width
-
-            var startX = 0
-            var endX = bitMatrixWidth - 1
-
-            // 找左邊界
-            for (x in 0 until bitMatrixWidth) {
-                var isBlack = false
-                for (y in 0 until height) {
-                    if (bitMatrix.get(x, y)) {
-                        startX = x
-                        isBlack = true
-                        break
-                    }
-                }
-                if (isBlack) break
-            }
-
-            // 找右邊界
-            for (x in bitMatrixWidth - 1 downTo 0) {
-                var isBlack = false
-                for (y in 0 until height) {
-                    if (bitMatrix.get(x, y)) {
-                        endX = x
-                        isBlack = true
-                        break
-                    }
-                }
-                if (isBlack) break
-            }
-
-            val croppedWidth = endX - startX + 1
-            val whiteBorderWidth = (croppedWidth * 0.03).toInt()
-            val finalWidth = croppedWidth + whiteBorderWidth * 2
-
-            val bitmap = android.graphics.Bitmap.createBitmap(finalWidth, height, android.graphics.Bitmap.Config.RGB_565)
-
-            // 填充白邊
-            for (x in 0 until finalWidth) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, android.graphics.Color.WHITE)
-                }
-            }
-
-            // 畫出條碼內容
-            for (x in 0 until croppedWidth) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x + whiteBorderWidth, y, if (bitMatrix.get(x + startX, y)) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
-                }
-            }
-            bitmap
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 }
