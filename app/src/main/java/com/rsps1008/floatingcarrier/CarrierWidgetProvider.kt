@@ -3,13 +3,10 @@ package com.rsps1008.floatingcarrier
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ClipData
 import android.content.ComponentName
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import android.widget.RemoteViews
 import kotlin.math.roundToInt
 
@@ -55,10 +52,10 @@ class CarrierWidgetProvider : AppWidgetProvider() {
             )
             val pendingIntent = when (clickAction) {
                 CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER -> {
-                    val copyIntent = Intent(context, CarrierWidgetProvider::class.java).apply {
+                    val copyIntent = Intent(context, WidgetCopyActivity::class.java).apply {
                         action = ACTION_COPY_CARRIER
                     }
-                    PendingIntent.getBroadcast(
+                    PendingIntent.getActivity(
                         context,
                         1,
                         copyIntent,
@@ -108,20 +105,5 @@ class CarrierWidgetProvider : AppWidgetProvider() {
 
     override fun onEnabled(context: Context) {
         updateAllWidgets(context)
-    }
-
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-        if (intent.action == ACTION_COPY_CARRIER) {
-            val sharedPref = context.getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
-            val vehicleNumber = sharedPref.getString("vehicleNumber", null)
-            if (!vehicleNumber.isNullOrBlank()) {
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("vehicle_number", vehicleNumber))
-                Toast.makeText(context, context.getString(R.string.widget_copy_success), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, context.getString(R.string.widget_copy_empty), Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 }

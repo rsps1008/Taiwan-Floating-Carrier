@@ -35,8 +35,8 @@
     <string name="widget_click_hint">你可以決定點擊桌面小工具時，要直接打開主畫面，還是複製載具號碼。</string>
     <string name="widget_click_open_app">打開主畫面</string>
     <string name="widget_click_copy_carrier">複製載具號碼</string>
-    <string name="widget_copy_success">已複製載具號碼</string>
-    <string name="widget_copy_empty">尚未設定載具號碼</string>
+    <string name="widget_copy_success">已複製載具號碼到剪貼簿</string>
+    <string name="widget_copy_empty">尚未設定載具號碼，無法複製</string>
     <string name="widget_description">顯示手機條碼的小工具</string>
     <string name="widget_barcode_description">手機條碼圖片</string>
 </resources>

@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.rsps1008.floatingcarrier.WidgetCopyActivity"
+            android:exported="false"
+            android:theme="@style/TransparentTheme" />
+
         <receiver
             android:name=".CarrierWidgetProvider"
             android:exported="true">
