@@ -8,6 +8,9 @@
   - 產生並顯示載具條碼
   - 提供 widget 顯示條碼與複製載具號碼
   - 透過主畫面調整載具號碼、透明度、關閉行為與 widget 點擊行為
+    - widget 點擊可直接開啟漂浮視窗或複製載具號碼，不再導向主畫面
+    - 複製載具號碼只會寫入剪貼簿並顯示系統通知，不會開啟任何畫面
+    - Android 13+ 需要通知權限才能看到複製回饋通知
 
 ## 主要檔案位置
 - `app/src/main/java/com/rsps1008/floatingcarrier/MainActivity.kt`

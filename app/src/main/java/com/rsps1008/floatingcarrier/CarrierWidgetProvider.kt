@@ -1,19 +1,31 @@
 package com.rsps1008.floatingcarrier
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
+import android.content.ClipboardManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.RemoteViews
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import kotlin.math.roundToInt
 
 class CarrierWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val ACTION_COPY_CARRIER = "com.rsps1008.floatingcarrier.action.COPY_CARRIER"
+        private const val NOTIFICATION_CHANNEL_ID = "widget_feedback_channel"
+        private const val NOTIFICATION_ID_COPY_SUCCESS = 1001
+        private const val NOTIFICATION_ID_COPY_EMPTY = 1002
 
         fun updateAllWidgets(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -48,14 +60,14 @@ class CarrierWidgetProvider : AppWidgetProvider() {
 
             val clickAction = sharedPref.getString(
                 CarrierPrefs.KEY_WIDGET_CLICK_ACTION,
-                CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_APP
+                CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
             )
             val pendingIntent = when (clickAction) {
                 CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER -> {
-                    val copyIntent = Intent(context, WidgetCopyActivity::class.java).apply {
+                    val copyIntent = Intent(context, CarrierWidgetProvider::class.java).apply {
                         action = ACTION_COPY_CARRIER
                     }
-                    PendingIntent.getActivity(
+                    PendingIntent.getBroadcast(
                         context,
                         1,
                         copyIntent,
@@ -63,15 +75,13 @@ class CarrierWidgetProvider : AppWidgetProvider() {
                     )
                 }
                 else -> {
-                    val launchIntent = Intent(context, MainActivity::class.java).apply {
-                        action = Intent.ACTION_MAIN
-                        addCategory(Intent.CATEGORY_LAUNCHER)
-                        putExtra("showUI", true)
+                    val showFloatingIntent = Intent(context, FloatingViewService::class.java).apply {
+                        action = FloatingViewService.ACTION_SHOW_FLOATING_VIEW
                     }
-                    PendingIntent.getActivity(
+                    PendingIntent.getService(
                         context,
                         0,
-                        launchIntent,
+                        showFloatingIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
                 }
@@ -81,6 +91,69 @@ class CarrierWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.widget_barcode_image, pendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        private fun copyCarrierToClipboard(context: Context) {
+            val sharedPref = context.getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
+            val vehicleNumber = sharedPref.getString("vehicleNumber", null)
+            val appContext = context.applicationContext
+            if (!vehicleNumber.isNullOrBlank()) {
+                val clipboard = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("vehicle_number", vehicleNumber))
+                showCopyNotification(
+                    appContext,
+                    NOTIFICATION_ID_COPY_SUCCESS,
+                    appContext.getString(R.string.widget_copy_success)
+                )
+                updateAllWidgets(appContext)
+            } else {
+                showCopyNotification(
+                    appContext,
+                    NOTIFICATION_ID_COPY_EMPTY,
+                    appContext.getString(R.string.widget_copy_empty)
+                )
+            }
+        }
+
+        private fun showCopyNotification(context: Context, notificationId: Int, message: String) {
+            if (!canPostNotifications(context)) {
+                return
+            }
+            ensureNotificationChannel(context)
+            val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(message)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build()
+            NotificationManagerCompat.from(context).notify(notificationId, notification)
+        }
+
+        private fun ensureNotificationChannel(context: Context) {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
+                return
+            }
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                context.getString(R.string.widget_feedback_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        private fun canPostNotifications(context: Context): Boolean {
+            return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == ACTION_COPY_CARRIER) {
+            copyCarrierToClipboard(context)
         }
     }
 

@@ -20,6 +20,7 @@ import kotlin.math.abs
 class FloatingViewService : Service() {
 
     companion object {
+        const val ACTION_SHOW_FLOATING_VIEW = "com.rsps1008.floatingcarrier.action.SHOW_FLOATING_VIEW"
         const val ACTION_UPDATE_SETTINGS = "com.rsps1008.floatingcarrier.action.UPDATE_SETTINGS"
         const val PREF_KEY_CLOSE_ACTION = "closeAction"
         const val PREF_VALUE_CLOSE_FLOATING = "close_floating"
@@ -28,6 +29,8 @@ class FloatingViewService : Service() {
 
     private var windowManager: WindowManager? = null
     private var floatingView: View? = null
+    private var bubbleContainer: View? = null
+    private var contentContainer: View? = null
     private var isBarcodeVisible = true  // 記錄條碼是否可見
     private var isBubbleCollapsed = false
     private lateinit var layoutParams: WindowManager.LayoutParams
@@ -40,8 +43,16 @@ class FloatingViewService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_UPDATE_SETTINGS) {
-            refreshFromPrefs()
+        when (intent?.action) {
+            ACTION_SHOW_FLOATING_VIEW -> {
+                if (isBubbleCollapsed) {
+                    expandFromBubble(bubbleContainer, contentContainer)
+                }
+                refreshFromPrefs()
+            }
+            ACTION_UPDATE_SETTINGS -> {
+                refreshFromPrefs()
+            }
         }
         return START_STICKY
     }
@@ -112,9 +123,9 @@ class FloatingViewService : Service() {
         windowManager?.addView(floatingView, layoutParams)
         floatingView?.alpha = expandedOpacity / 100f
 
-        val bubbleContainer = floatingView?.findViewById<View>(R.id.bubble_container)
+        bubbleContainer = floatingView?.findViewById<View>(R.id.bubble_container)
         val bubbleIcon = floatingView?.findViewById<View>(R.id.bubble_icon)
-        val contentContainer = floatingView?.findViewById<View>(R.id.content_container)
+        contentContainer = floatingView?.findViewById<View>(R.id.content_container)
         val headerContainer = floatingView?.findViewById<View>(R.id.header_container)
         val barcodeImageView = floatingView?.findViewById<ImageView>(R.id.barcode_image)
         val vehicleNumberTextView = floatingView?.findViewById<TextView>(R.id.vehicle_number_text)

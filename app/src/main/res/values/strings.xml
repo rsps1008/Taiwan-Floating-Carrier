@@ -32,11 +32,12 @@
     <string name="overlay_prompt_section_label">權限提醒</string>
     <string name="overlay_prompt_section_hint">如果你曾經選擇不再提醒，這裡可以重新開啟提示視窗。</string>
     <string name="widget_click_label">小工具點擊動作</string>
-    <string name="widget_click_hint">你可以決定點擊桌面小工具時，要直接打開主畫面，還是複製載具號碼。</string>
-    <string name="widget_click_open_app">打開主畫面</string>
+    <string name="widget_click_hint">你可以決定點擊桌面小工具時，要直接開啟漂浮視窗，還是複製載具號碼。</string>
+    <string name="widget_click_open_app">開啟漂浮視窗</string>
     <string name="widget_click_copy_carrier">複製載具號碼</string>
     <string name="widget_copy_success">已複製載具號碼到剪貼簿</string>
     <string name="widget_copy_empty">尚未設定載具號碼，無法複製</string>
+    <string name="widget_feedback_channel_name">小工具回饋通知</string>
     <string name="widget_description">顯示手機條碼的小工具</string>
     <string name="widget_barcode_description">手機條碼圖片</string>
 </resources>

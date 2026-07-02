@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +18,8 @@ import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.TextView
 import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
@@ -24,6 +27,7 @@ import com.google.android.material.textfield.TextInputEditText
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CODE_OVERLAY_PERMISSION = 1001
+    private val REQUEST_CODE_NOTIFICATION_PERMISSION = 1002
     private val settingsHandler = Handler(Looper.getMainLooper())
     private var vehicleApplyRunnable: Runnable? = null
     private var opacityApplyRunnable: Runnable? = null
@@ -33,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val hasOverlayPermission = Settings.canDrawOverlays(this)
         val sharedPref = getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
+        requestNotificationPermissionIfNeeded()
         showSettingsUi(sharedPref, hasOverlayPermission)
         pendingOverlayPrompt = !hasOverlayPermission && !sharedPref.getBoolean(CarrierPrefs.KEY_OVERLAY_PROMPT_SUPPRESSED, false)
         if (pendingOverlayPrompt) {
@@ -61,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         )
         val savedWidgetClickAction = sharedPref.getString(
             CarrierPrefs.KEY_WIDGET_CLICK_ACTION,
-            CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_APP
+            CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
         )
         editTextVehicleNumber.setText(savedVehicleNumber?.removePrefix("/") ?: "")
         opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
@@ -173,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         widgetClickGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedAction = when (checkedId) {
                 R.id.widget_click_copy_carrier -> CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER
-                else -> CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_APP
+                else -> CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
             }
             sharedPref.edit()
                 .putString(CarrierPrefs.KEY_WIDGET_CLICK_ACTION, selectedAction)
@@ -272,4 +277,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isFloatingServiceRunning(): Boolean = AppRuntimeState.isFloatingServiceRunning
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+            REQUEST_CODE_NOTIFICATION_PERMISSION
+        )
+    }
 }
