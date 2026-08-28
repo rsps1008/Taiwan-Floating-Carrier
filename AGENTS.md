@@ -9,8 +9,8 @@
   - 提供 widget 顯示條碼與複製載具號碼
   - 透過主畫面調整載具號碼、透明度、關閉行為與 widget 點擊行為
     - widget 點擊可直接開啟漂浮視窗或複製載具號碼，不再導向主畫面
-    - 複製載具號碼只會寫入剪貼簿並顯示系統通知，不會開啟任何畫面
-    - Android 13+ 需要通知權限才能看到複製回饋通知
+     - 複製載具號碼只會寫入剪貼簿並透過透明 Activity 顯示 Toast，不會開啟可見的主畫面
+     - Android 13+ 的通知權限只影響前景服務通知，不影響 widget 複製的 Toast 回饋
 
 ## 主要檔案位置
 - `app/src/main/java/com/rsps1008/floatingcarrier/MainActivity.kt`
@@ -25,6 +25,10 @@
   - 權限、Activity、Service、Widget 註冊
 - `app/src/main/res/`
   - 版面、樣式、字串、圖片與 widget 資源
+- `docs/`
+  - GitHub Pages 首頁、隱私政策、MIT License 與自訂網域設定
+- `PRIVACY_POLICY.md` / `LICENSE`
+  - 根目錄可直接閱讀的隱私政策與 MIT 授權全文
 
 ## 修改原則
 - 先維持現有行為，再做局部調整，避免不必要的大改動。
@@ -33,6 +37,8 @@
 - 改動浮窗、widget 或權限流程時，要特別注意：
   - Overlay 權限是否仍能順利進入
   - 前景服務是否仍能啟動與停止
+  - widget 開啟漂浮視窗需經由 `CarrierWidgetProvider` 廣播，再以 `startForegroundService()` 啟動前景服務
+  - widget 複製載具需經由透明 `WidgetCopyActivity` 顯示 Toast，不使用通知列回饋
   - widget 點擊與複製流程是否正常
 - 新增或調整 UI 時，盡量保持現有專案的 Android View/XML 寫法與視覺語言一致。
 

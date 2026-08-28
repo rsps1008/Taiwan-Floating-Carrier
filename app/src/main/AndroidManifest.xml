@@ -21,6 +21,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".WidgetCopyActivity"
+            android:theme="@style/TransparentTheme"
+            android:exported="false" />
+
         <receiver
             android:name=".CarrierWidgetProvider"
             android:exported="true">
