@@ -26,6 +26,10 @@ import com.google.android.material.textfield.TextInputEditText
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val EXTRA_SHOW_SETTINGS = "showUI"
+    }
+
     private val REQUEST_CODE_OVERLAY_PERMISSION = 1001
     private val REQUEST_CODE_NOTIFICATION_PERMISSION = 1002
     private val settingsHandler = Handler(Looper.getMainLooper())
@@ -37,7 +41,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val hasOverlayPermission = Settings.canDrawOverlays(this)
         val sharedPref = getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
+        val shouldShowSettings = intent.getBooleanExtra(EXTRA_SHOW_SETTINGS, false)
+        val isFirstLaunch = !sharedPref.getBoolean(CarrierPrefs.KEY_HAS_OPENED_APP, false)
+        sharedPref.edit().putBoolean(CarrierPrefs.KEY_HAS_OPENED_APP, true).apply()
         requestNotificationPermissionIfNeeded()
+
+        if (!shouldShowSettings && !isFirstLaunch &&
+            sharedPref.getString(
+                CarrierPrefs.KEY_STARTUP_ACTION,
+                CarrierPrefs.VALUE_STARTUP_OPEN_SETTINGS
+            ) == CarrierPrefs.VALUE_STARTUP_OPEN_FLOATING && hasOverlayPermission
+        ) {
+            startFloatingService()
+            finish()
+            return
+        }
+
         showSettingsUi(sharedPref, hasOverlayPermission)
         pendingOverlayPrompt = !hasOverlayPermission && !sharedPref.getBoolean(CarrierPrefs.KEY_OVERLAY_PROMPT_SUPPRESSED, false)
         if (pendingOverlayPrompt) {
@@ -56,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         val opacityValueText = findViewById<TextView>(R.id.opacity_value_text)
         val closeActionGroup = findViewById<RadioGroup>(R.id.close_action_group)
         val widgetClickGroup = findViewById<RadioGroup>(R.id.widget_click_group)
+        val startupActionGroup = findViewById<RadioGroup>(R.id.startup_action_group)
         val resetOverlayPromptButton = findViewById<Button>(R.id.reset_overlay_prompt_button)
         val startButton = findViewById<Button>(R.id.start_service_button)
         val savedVehicleNumber = sharedPref.getString("vehicleNumber", "")
@@ -68,6 +88,10 @@ class MainActivity : AppCompatActivity() {
             CarrierPrefs.KEY_WIDGET_CLICK_ACTION,
             CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
         )
+        val savedStartupAction = sharedPref.getString(
+            CarrierPrefs.KEY_STARTUP_ACTION,
+            CarrierPrefs.VALUE_STARTUP_OPEN_SETTINGS
+        )
         editTextVehicleNumber.setText(savedVehicleNumber?.removePrefix("/") ?: "")
         opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
         opacityValueText.text = "${savedOpacity.coerceIn(50, 100)}%"
@@ -78,6 +102,10 @@ class MainActivity : AppCompatActivity() {
         when (savedWidgetClickAction) {
             CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER -> widgetClickGroup.check(R.id.widget_click_copy_carrier)
             else -> widgetClickGroup.check(R.id.widget_click_open_app)
+        }
+        when (savedStartupAction) {
+            CarrierPrefs.VALUE_STARTUP_OPEN_FLOATING -> startupActionGroup.check(R.id.startup_action_open_floating)
+            else -> startupActionGroup.check(R.id.startup_action_open_settings)
         }
 
         fun currentVehicleInput(): String = editTextVehicleNumber.text?.toString()?.trim().orEmpty()
@@ -184,6 +212,16 @@ class MainActivity : AppCompatActivity() {
                 .putString(CarrierPrefs.KEY_WIDGET_CLICK_ACTION, selectedAction)
                 .apply()
             CarrierWidgetProvider.updateAllWidgets(this)
+        }
+
+        startupActionGroup.setOnCheckedChangeListener { _, checkedId ->
+            val selectedAction = when (checkedId) {
+                R.id.startup_action_open_floating -> CarrierPrefs.VALUE_STARTUP_OPEN_FLOATING
+                else -> CarrierPrefs.VALUE_STARTUP_OPEN_SETTINGS
+            }
+            sharedPref.edit()
+                .putString(CarrierPrefs.KEY_STARTUP_ACTION, selectedAction)
+                .apply()
         }
 
         resetOverlayPromptButton.setOnClickListener {

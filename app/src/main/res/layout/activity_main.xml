@@ -53,7 +53,7 @@
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/subtitle_text">
+            app:layout_constraintTop_toBottomOf="@id/start_service_button">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -165,7 +165,67 @@
             app:cornerRadius="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/opacity_card" />
+            app:layout_constraintTop_toBottomOf="@id/subtitle_text" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/startup_action_card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="4dp"
+            app:strokeColor="@color/surface_outline"
+            app:strokeWidth="1dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/opacity_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/startup_action_label"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/startup_action_hint"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <RadioGroup
+                    android:id="@+id/startup_action_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/startup_action_open_settings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/startup_action_open_settings"
+                        android:textColor="@color/text_primary" />
+
+                    <RadioButton
+                        android:id="@+id/startup_action_open_floating"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/startup_action_open_floating"
+                        android:textColor="@color/text_primary" />
+                </RadioGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/close_action_card"
@@ -179,7 +239,7 @@
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_service_button">
+            app:layout_constraintTop_toBottomOf="@id/startup_action_card">
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -8,6 +8,7 @@
   - 產生並顯示載具條碼
   - 提供 widget 顯示條碼與複製載具號碼
   - 透過主畫面調整載具號碼、透明度、關閉行為與 widget 點擊行為
+  - 可設定非第一次從桌面開啟 APP 時，直接顯示漂浮載具或顯示設定頁面
     - widget 點擊可直接開啟漂浮視窗或複製載具號碼，不再導向主畫面
      - 複製載具號碼只會寫入剪貼簿並透過透明 Activity 顯示 Toast，不會開啟可見的主畫面
      - Android 13+ 的通知權限只影響前景服務通知，不影響 widget 複製的 Toast 回饋
@@ -15,6 +16,8 @@
 ## 主要檔案位置
 - `app/src/main/java/com/rsps1008/floatingcarrier/MainActivity.kt`
   - 主設定畫面、Overlay 權限提示、啟動浮窗服務
+- `app/src/main/java/com/rsps1008/floatingcarrier/CarrierPrefs.kt`
+  - SharedPreferences 檔案與設定 key/選項值集中定義
 - `app/src/main/java/com/rsps1008/floatingcarrier/FloatingViewService.kt`
   - 懸浮視窗的顯示、拖曳、收合、條碼刷新與關閉行為
 - `app/src/main/java/com/rsps1008/floatingcarrier/CarrierBarcodeGenerator.kt`
