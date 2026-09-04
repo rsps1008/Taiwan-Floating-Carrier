@@ -263,10 +263,7 @@ class FloatingViewService : Service() {
         // 生成條碼與顯示載具號碼
         val barcodeWidth = (screenWidth * 0.8).toInt()
         val finalVehicleNumber = sharedPref.getString("vehicleNumber", null)
-        barcodeImageView?.setImageBitmap(
-            finalVehicleNumber?.let { CarrierBarcodeGenerator.generate(it, barcodeWidth, (screenWidth / 11 * 2)) }
-        )
-        vehicleNumberTextView?.text = finalVehicleNumber.orEmpty()
+        updateCarrierContent(barcodeImageView, vehicleNumberTextView, finalVehicleNumber, barcodeWidth, screenWidth)
         CarrierWidgetProvider.updateAllWidgets(this)
     }
 
@@ -285,11 +282,28 @@ class FloatingViewService : Service() {
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val barcodeWidth = (screenWidth * 0.8).toInt()
-        barcodeImageView?.setImageBitmap(
-            finalVehicleNumber?.let { CarrierBarcodeGenerator.generate(it, barcodeWidth, (screenWidth / 11 * 2)) }
-        )
-        vehicleNumberTextView?.text = finalVehicleNumber.orEmpty()
+        updateCarrierContent(barcodeImageView, vehicleNumberTextView, finalVehicleNumber, barcodeWidth, screenWidth)
         CarrierWidgetProvider.updateAllWidgets(this)
+    }
+
+    private fun updateCarrierContent(
+        barcodeImageView: ImageView?,
+        vehicleNumberTextView: TextView?,
+        vehicleNumber: String?,
+        barcodeWidth: Int,
+        screenWidth: Int
+    ) {
+        if (vehicleNumber.isNullOrBlank()) {
+            barcodeImageView?.visibility = View.GONE
+            vehicleNumberTextView?.text = getString(R.string.carrier_not_configured_hint)
+            return
+        }
+
+        barcodeImageView?.visibility = View.VISIBLE
+        barcodeImageView?.setImageBitmap(
+            CarrierBarcodeGenerator.generate(vehicleNumber, barcodeWidth, screenWidth / 11 * 2)
+        )
+        vehicleNumberTextView?.text = vehicleNumber
     }
 
     private fun collapseToBubble(bubbleContainer: View?, contentContainer: View?) {

@@ -15,14 +15,23 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.ListView
 import android.widget.RadioGroup
 import android.widget.SeekBar
+import androidx.appcompat.widget.SwitchCompat
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.google.android.material.textfield.TextInputEditText
 
 class MainActivity : AppCompatActivity() {
@@ -65,16 +74,48 @@ class MainActivity : AppCompatActivity() {
         }
 
         showSettingsUi(sharedPref, hasOverlayPermission)
-        pendingOverlayPrompt = !hasOverlayPermission && !sharedPref.getBoolean(CarrierPrefs.KEY_OVERLAY_PROMPT_SUPPRESSED, false)
+        pendingOverlayPrompt = !hasOverlayPermission && !sharedPref.getBoolean(
+            CarrierPrefs.KEY_OVERLAY_PROMPT_SUPPRESSED,
+            false
+        )
         if (pendingOverlayPrompt) {
             showOverlayPermissionPrompt(sharedPref)
         }
     }
 
-    private fun showSettingsUi(sharedPref: android.content.SharedPreferences, hasOverlayPermission: Boolean) {
+    private fun showSettingsUi(
+        sharedPref: android.content.SharedPreferences,
+        hasOverlayPermission: Boolean
+    ) {
         settingsHandler.removeCallbacksAndMessages(null)
         setTheme(R.style.AppTheme)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.isAppearanceLightStatusBars = true
+        insetsController.isAppearanceLightNavigationBars = true
         setContentView(R.layout.activity_main)
+
+        val rootView = findViewById<View>(R.id.activity_main_root)
+        val contentContainer = findViewById<LinearLayout>(R.id.main_content_container)
+
+        val initialContentPaddingStart = contentContainer.paddingStart
+        val initialContentPaddingEnd = contentContainer.paddingEnd
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updatePadding(
+                top = insets.top,
+                bottom = insets.bottom
+            )
+            contentContainer.updatePadding(
+                left = initialContentPaddingStart + insets.left,
+                right = initialContentPaddingEnd + insets.right
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(rootView)
 
         val editTextVehicleNumber = findViewById<TextInputEditText>(R.id.edit_text_vehicle_number)
         val vehicleHintText = findViewById<TextView>(R.id.vehicle_number_hint_text)
@@ -83,8 +124,11 @@ class MainActivity : AppCompatActivity() {
         val closeActionGroup = findViewById<RadioGroup>(R.id.close_action_group)
         val widgetClickGroup = findViewById<RadioGroup>(R.id.widget_click_group)
         val widgetTargetButton = findViewById<Button>(R.id.widget_target_app_button)
+        val widgetShowCarrierNumberSwitch =
+            findViewById<SwitchCompat>(R.id.widget_show_carrier_number_switch)
         val startupActionGroup = findViewById<RadioGroup>(R.id.startup_action_group)
         val resetOverlayPromptButton = findViewById<Button>(R.id.reset_overlay_prompt_button)
+        val privacyPolicyButton = findViewById<Button>(R.id.privacy_policy_button)
         val startButton = findViewById<Button>(R.id.start_service_button)
         val savedVehicleNumber = sharedPref.getString("vehicleNumber", "")
         val savedOpacity = sharedPref.getInt("expandedOpacity", 100)
@@ -100,11 +144,16 @@ class MainActivity : AppCompatActivity() {
             CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE,
             null
         )
+        val savedWidgetShowCarrierNumber = sharedPref.getBoolean(
+            CarrierPrefs.KEY_WIDGET_SHOW_CARRIER_NUMBER,
+            true
+        )
         val savedStartupAction = sharedPref.getString(
             CarrierPrefs.KEY_STARTUP_ACTION,
             CarrierPrefs.VALUE_STARTUP_OPEN_SETTINGS
         )
         editTextVehicleNumber.setText(savedVehicleNumber?.removePrefix("/") ?: "")
+        widgetShowCarrierNumberSwitch.isChecked = savedWidgetShowCarrierNumber
         opacitySeekBar.progress = ((savedOpacity.coerceIn(50, 100) - 50) / 10)
         opacityValueText.text = "${savedOpacity.coerceIn(50, 100)}%"
         when (savedCloseAction) {
@@ -117,11 +166,12 @@ class MainActivity : AppCompatActivity() {
             else -> widgetClickGroup.check(R.id.widget_click_open_app)
         }
         updateWidgetTargetButton(widgetTargetButton, savedWidgetTargetPackage)
-        widgetTargetButton.visibility = if (savedWidgetClickAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
+        widgetTargetButton.visibility =
+            if (savedWidgetClickAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
         when (savedStartupAction) {
             CarrierPrefs.VALUE_STARTUP_OPEN_FLOATING -> startupActionGroup.check(R.id.startup_action_open_floating)
             else -> startupActionGroup.check(R.id.startup_action_open_settings)
@@ -141,6 +191,7 @@ class MainActivity : AppCompatActivity() {
                 vehicleHintText.visibility = View.VISIBLE
             }
         }
+
         fun persistVehicleIfReady() {
             val raw = currentVehicleInput().take(7)
             if (raw.length < 7) {
@@ -164,7 +215,8 @@ class MainActivity : AppCompatActivity() {
 
         vehicleApplyRunnable = Runnable { persistVehicleIfReady() }
         editTextVehicleNumber.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) =
+                Unit
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
 
@@ -190,7 +242,8 @@ class MainActivity : AppCompatActivity() {
             sharedPref.edit()
                 .putInt("expandedOpacity", selectedOpacity)
                 .commit()
-            opacityValueText.text = getString(R.string.opacity_value_100).replace("100", selectedOpacity.toString())
+            opacityValueText.text =
+                getString(R.string.opacity_value_100).replace("100", selectedOpacity.toString())
             CarrierWidgetProvider.updateAllWidgets(this)
             if (Settings.canDrawOverlays(this) && isFloatingServiceRunning()) {
                 startFloatingService(action = FloatingViewService.ACTION_UPDATE_SETTINGS)
@@ -232,15 +285,23 @@ class MainActivity : AppCompatActivity() {
                 .putString(CarrierPrefs.KEY_WIDGET_CLICK_ACTION, selectedAction)
                 .apply()
             CarrierWidgetProvider.updateAllWidgets(this)
-            widgetTargetButton.visibility = if (selectedAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+            widgetTargetButton.visibility =
+                if (selectedAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
         }
 
         widgetTargetButton.setOnClickListener {
             showLauncherAppPicker(sharedPref, widgetTargetButton)
+        }
+
+        widgetShowCarrierNumberSwitch.setOnCheckedChangeListener { _, isChecked ->
+            sharedPref.edit()
+                .putBoolean(CarrierPrefs.KEY_WIDGET_SHOW_CARRIER_NUMBER, isChecked)
+                .apply()
+            CarrierWidgetProvider.updateAllWidgets(this)
         }
 
         startupActionGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -261,6 +322,15 @@ class MainActivity : AppCompatActivity() {
             if (pendingOverlayPrompt) {
                 showOverlayPermissionPrompt(sharedPref)
             }
+        }
+
+        privacyPolicyButton.setOnClickListener {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.privacy_policy_url))
+                )
+            )
         }
 
         startButton.text = if (hasOverlayPermission) {
@@ -323,7 +393,8 @@ class MainActivity : AppCompatActivity() {
             if (Settings.canDrawOverlays(this)) {
                 val sharedPref = getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
                 showSettingsUi(sharedPref, true)
-                findViewById<TextView>(R.id.subtitle_text).text = getString(R.string.overlay_permission_granted_hint)
+                findViewById<TextView>(R.id.subtitle_text).text =
+                    getString(R.string.overlay_permission_granted_hint)
                 if (isFloatingServiceRunning()) {
                     startFloatingService(action = FloatingViewService.ACTION_UPDATE_SETTINGS)
                 }
@@ -344,7 +415,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateWidgetTargetButton(button: Button, packageName: String?) {
-        val selectedApp = packageName?.let { findLauncherApps().firstOrNull { app -> app.packageName == it } }
+        val selectedApp =
+            packageName?.let { findLauncherApps().firstOrNull { app -> app.packageName == it } }
         button.text = selectedApp?.let { getString(R.string.widget_target_app_selected, it.label) }
             ?: getString(R.string.widget_target_app_choose)
     }
@@ -358,22 +430,60 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val currentPackage = sharedPref.getString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, null)
-        val labels = apps.map { it.label }.toTypedArray()
-        val checkedIndex = apps.indexOfFirst { it.packageName == currentPackage }
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.widget_target_app_dialog_title))
-            .setSingleChoiceItems(labels, checkedIndex) { dialog, which ->
-                val selectedApp = apps[which]
-                sharedPref.edit()
-                    .putString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, selectedApp.packageName)
-                    .apply()
-                updateWidgetTargetButton(targetButton, selectedApp.packageName)
-                CarrierWidgetProvider.updateAllWidgets(this)
-                dialog.dismiss()
+        val dialogView = layoutInflater.inflate(R.layout.dialog_widget_target_app_picker, null)
+        val searchInput = dialogView.findViewById<EditText>(R.id.widget_target_app_search_input)
+        val appList = dialogView.findViewById<ListView>(R.id.widget_target_app_list)
+        val filteredApps = apps.toMutableList()
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_list_item_1,
+            filteredApps.map { it.label }.toMutableList()
+        )
+        appList.adapter = adapter
+
+        fun filterApps(query: String) {
+            val normalizedQuery = query.trim().lowercase()
+            filteredApps.clear()
+            filteredApps += if (normalizedQuery.isEmpty()) {
+                apps
+            } else {
+                apps.filter { app ->
+                    app.label.lowercase().contains(normalizedQuery) ||
+                            app.packageName.lowercase().contains(normalizedQuery)
+                }
             }
+            adapter.clear()
+            adapter.addAll(filteredApps.map { it.label })
+            adapter.notifyDataSetChanged()
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.widget_target_app_dialog_title))
+            .setView(dialogView)
             .setNegativeButton(getString(R.string.overlay_prompt_cancel), null)
-            .show()
+            .create()
+
+        appList.setOnItemClickListener { _, _, position, _ ->
+            val selectedApp = filteredApps[position]
+            sharedPref.edit()
+                .putString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, selectedApp.packageName)
+                .apply()
+            updateWidgetTargetButton(targetButton, selectedApp.packageName)
+            CarrierWidgetProvider.updateAllWidgets(this)
+            dialog.dismiss()
+        }
+
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) =
+                Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable?) {
+                filterApps(s?.toString().orEmpty())
+            }
+        })
+        dialog.show()
     }
 
     @Suppress("DEPRECATION")
@@ -403,7 +513,11 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return
         }
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             return
         }
         ActivityCompat.requestPermissions(

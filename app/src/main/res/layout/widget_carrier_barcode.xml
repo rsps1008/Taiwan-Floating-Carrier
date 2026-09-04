@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_card_surface"
+    android:gravity="center"
+    android:orientation="vertical"
     android:padding="8dp">
 
     <ImageView
         android:id="@+id/widget_barcode_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:adjustViewBounds="true"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="false"
         android:contentDescription="@string/widget_barcode_description"
-        android:scaleType="fitCenter" />
-</FrameLayout>
+        android:scaleType="fitXY" />
+
+    <TextView
+        android:id="@+id/widget_barcode_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="@color/text_primary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_empty_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/carrier_not_configured_hint"
+        android:textColor="@color/error_text"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</LinearLayout>

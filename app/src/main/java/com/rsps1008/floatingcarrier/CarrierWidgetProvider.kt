@@ -35,18 +35,37 @@ class CarrierWidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_carrier_barcode)
             val sharedPref = context.getSharedPreferences(CarrierPrefs.PREF_FILE, Context.MODE_PRIVATE)
             val vehicleNumber = sharedPref.getString("vehicleNumber", null)
+            val hasVehicleNumber = !vehicleNumber.isNullOrBlank()
+            val showCarrierNumber = sharedPref.getBoolean(
+                CarrierPrefs.KEY_WIDGET_SHOW_CARRIER_NUMBER,
+                true
+            )
             val density = context.resources.displayMetrics.density
             val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH).takeIf { it > 0 }
                 ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH).coerceAtLeast(180)
             val heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT).takeIf { it > 0 }
                 ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT).coerceAtLeast(72)
             val bitmapWidth = (widthDp * density).roundToInt().coerceAtLeast(240)
-            val bitmapHeight = (heightDp * density * 0.72f).roundToInt().coerceAtLeast(96)
+            val bitmapHeight = (heightDp * density).roundToInt().coerceAtLeast(96)
 
-            val barcode = vehicleNumber?.let { CarrierBarcodeGenerator.generate(it, bitmapWidth, bitmapHeight) }
+            val barcode = vehicleNumber?.takeIf { hasVehicleNumber }
+                ?.let { CarrierBarcodeGenerator.generate(it, bitmapWidth, bitmapHeight) }
             if (barcode != null) {
                 views.setImageViewBitmap(R.id.widget_barcode_image, barcode)
             }
+            views.setViewVisibility(
+                R.id.widget_barcode_image,
+                if (barcode != null) android.view.View.VISIBLE else android.view.View.GONE
+            )
+            views.setViewVisibility(
+                R.id.widget_barcode_text,
+                if (hasVehicleNumber && showCarrierNumber) android.view.View.VISIBLE else android.view.View.GONE
+            )
+            views.setTextViewText(R.id.widget_barcode_text, vehicleNumber.orEmpty())
+            views.setViewVisibility(
+                R.id.widget_empty_hint,
+                if (hasVehicleNumber) android.view.View.GONE else android.view.View.VISIBLE
+            )
 
             val clickAction = sharedPref.getString(
                 CarrierPrefs.KEY_WIDGET_CLICK_ACTION,
@@ -54,7 +73,9 @@ class CarrierWidgetProvider : AppWidgetProvider() {
             )
             val pendingIntent = when (clickAction) {
                 CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER -> {
-                    val copyIntent = Intent(context, WidgetCopyActivity::class.java)
+                    val copyIntent = Intent(context, WidgetCopyActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                    }
                     PendingIntent.getActivity(
                         context,
                         1,
@@ -84,6 +105,8 @@ class CarrierWidgetProvider : AppWidgetProvider() {
 
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
             views.setOnClickPendingIntent(R.id.widget_barcode_image, pendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_barcode_text, pendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_empty_hint, pendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

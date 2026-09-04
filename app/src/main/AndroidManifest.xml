@@ -31,6 +31,9 @@
         <activity
             android:name=".WidgetCopyActivity"
             android:theme="@style/TransparentTheme"
+            android:taskAffinity="com.rsps1008.floatingcarrier.widgetcopy"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
             android:exported="false" />
 
         <receiver

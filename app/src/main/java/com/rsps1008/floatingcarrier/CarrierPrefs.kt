@@ -6,6 +6,7 @@ object CarrierPrefs {
     const val KEY_OVERLAY_PROMPT_SUPPRESSED = "overlayPromptSuppressed"
     const val KEY_WIDGET_CLICK_ACTION = "widgetClickAction"
     const val KEY_WIDGET_TARGET_PACKAGE = "widgetTargetPackage"
+    const val KEY_WIDGET_SHOW_CARRIER_NUMBER = "widgetShowCarrierNumber"
     const val KEY_HAS_OPENED_APP = "hasOpenedApp"
     const val KEY_STARTUP_ACTION = "startupAction"
 

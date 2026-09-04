@@ -1,420 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_main_screen"
-    android:fillViewport="true"
-    tools:context=".MainActivity">
+    android:clipToPadding="true"
+    android:fillViewport="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
+        android:id="@+id/main_content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="24dp"
-        android:paddingTop="44dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="24dp">
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
 
         <TextView
             android:id="@+id/title_text"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
             android:text="@string/main_title"
             android:textColor="@color/text_primary"
             android:textSize="28sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/subtitle_text"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:text="@string/main_subtitle"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_text" />
+            android:textSize="14sp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/vehicle_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_service_button">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/vehicle_number_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/vehicle_input_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:hint="@string/vehicle_number_hint"
-                    app:boxBackgroundColor="@color/surface_bg"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="@color/brand_primary"
-                    app:prefixText="/">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edit_text_vehicle_number"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapCharacters"
-                        android:minHeight="56dp"
-                        android:paddingStart="4dp"
-                        android:paddingEnd="4dp"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_secondary" />
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" app:cardBackgroundColor="@color/surface_card" app:cardCornerRadius="24dp" app:cardElevation="4dp" app:strokeColor="@color/surface_outline" app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/vehicle_number_label" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/vehicle_input_layout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:hint="@string/vehicle_number_hint" app:boxBackgroundColor="@color/surface_bg" app:boxCornerRadiusBottomEnd="16dp" app:boxCornerRadiusBottomStart="16dp" app:boxCornerRadiusTopEnd="16dp" app:boxCornerRadiusTopStart="16dp" app:boxStrokeColor="@color/brand_primary" app:prefixText="/">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/edit_text_vehicle_number" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textCapCharacters" android:minHeight="56dp" android:paddingStart="4dp" android:paddingEnd="4dp" android:textColor="@color/text_primary" android:textColorHint="@color/text_secondary" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:id="@+id/vehicle_number_hint_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/vehicle_number_tip"
-                    android:textColor="@color/error_text"
-                    android:textSize="12sp" />
+                <TextView android:id="@+id/vehicle_number_hint_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/vehicle_number_tip" android:textColor="@color/error_text" android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/opacity_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vehicle_card">
+        <com.google.android.material.button.MaterialButton android:id="@+id/start_service_button" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="12dp" android:text="@string/start_floating_button" android:textAllCaps="false" android:textColor="@color/text_inverse" app:backgroundTint="@color/brand_primary" app:cornerRadius="16dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/opacity_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/opacity_value_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/opacity_value_100"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <SeekBar
-                    android:id="@+id/opacity_seekbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:max="5"
-                    android:progress="5" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/start_service_button"
-            android:layout_width="0dp"
-            android:layout_height="64dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/start_floating_button"
-            android:textAllCaps="false"
-            android:textColor="@color/text_inverse"
-            app:backgroundTint="@color/brand_primary"
-            app:cornerRadius="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/subtitle_text" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/startup_action_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/opacity_card">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/startup_action_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/startup_action_hint"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <RadioGroup
-                    android:id="@+id/startup_action_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/startup_action_open_settings"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/startup_action_open_settings"
-                        android:textColor="@color/text_primary" />
-
-                    <RadioButton
-                        android:id="@+id/startup_action_open_floating"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/startup_action_open_floating"
-                        android:textColor="@color/text_primary" />
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" app:cardBackgroundColor="@color/surface_card" app:cardCornerRadius="24dp" app:cardElevation="4dp" app:strokeColor="@color/surface_outline" app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/floating_settings_label" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/opacity_label" android:textColor="@color/text_primary" android:textSize="14sp" android:textStyle="bold" />
+                <TextView android:id="@+id/opacity_value_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="@string/opacity_value_100" android:textColor="@color/text_secondary" android:textSize="12sp" />
+                <SeekBar android:id="@+id/opacity_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:max="5" android:progress="5" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="8dp" android:background="@color/surface_outline" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/startup_action_label" android:textColor="@color/text_primary" android:textSize="14sp" android:textStyle="bold" />
+                <RadioGroup android:id="@+id/startup_action_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:orientation="vertical">
+                    <RadioButton android:id="@+id/startup_action_open_settings" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/startup_action_open_settings" android:textColor="@color/text_primary" />
+                    <RadioButton android:id="@+id/startup_action_open_floating" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/startup_action_open_floating" android:textColor="@color/text_primary" />
+                </RadioGroup>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="8dp" android:background="@color/surface_outline" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/close_action_label" android:textColor="@color/text_primary" android:textSize="14sp" android:textStyle="bold" />
+                <RadioGroup android:id="@+id/close_action_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:orientation="vertical">
+                    <RadioButton android:id="@+id/close_action_close_floating" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/close_action_close_floating" android:textColor="@color/text_primary" />
+                    <RadioButton android:id="@+id/close_action_close_app" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/close_action_close_app" android:textColor="@color/text_primary" />
                 </RadioGroup>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/close_action_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/startup_action_card">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/close_action_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/close_action_hint"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <RadioGroup
-                    android:id="@+id/close_action_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/close_action_close_floating"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/close_action_close_floating"
-                        android:textColor="@color/text_primary" />
-
-                    <RadioButton
-                        android:id="@+id/close_action_close_app"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/close_action_close_app"
-                        android:textColor="@color/text_primary" />
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" app:cardBackgroundColor="@color/surface_card" app:cardCornerRadius="24dp" app:cardElevation="4dp" app:strokeColor="@color/surface_outline" app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_click_label" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="@string/widget_click_hint" android:textColor="@color/text_secondary" android:textSize="12sp" />
+                <androidx.appcompat.widget.SwitchCompat android:id="@+id/widget_show_carrier_number_switch" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/widget_show_carrier_number" android:textColor="@color/text_primary" android:textSize="14sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/widget_tap_action_label" android:textColor="@color/text_primary" android:textSize="14sp" android:textStyle="bold" />
+                <RadioGroup android:id="@+id/widget_click_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:orientation="vertical">
+                    <RadioButton android:id="@+id/widget_click_open_app" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/widget_click_open_app" android:textColor="@color/text_primary" />
+                    <RadioButton android:id="@+id/widget_click_open_selected_app" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/widget_click_open_selected_app" android:textColor="@color/text_primary" />
+                    <RadioButton android:id="@+id/widget_click_copy_carrier" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/widget_click_copy_carrier" android:textColor="@color/text_primary" />
                 </RadioGroup>
+                <com.google.android.material.button.MaterialButton android:id="@+id/widget_target_app_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:text="@string/widget_target_app_choose" android:textAllCaps="false" android:textColor="@color/brand_primary" app:backgroundTint="@color/surface_card_alt" app:cornerRadius="12dp" app:strokeWidth="0dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/widget_click_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/close_action_card">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/widget_click_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/widget_click_hint"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <RadioGroup
-                    android:id="@+id/widget_click_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/widget_click_open_app"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/widget_click_open_app"
-                        android:textColor="@color/text_primary" />
-
-                    <RadioButton
-                        android:id="@+id/widget_click_open_selected_app"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/widget_click_open_selected_app"
-                        android:textColor="@color/text_primary" />
-
-                    <RadioButton
-                        android:id="@+id/widget_click_copy_carrier"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/widget_click_copy_carrier"
-                        android:textColor="@color/text_primary" />
-                </RadioGroup>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/widget_target_app_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/widget_target_app_choose"
-                    android:textAllCaps="false"
-                    android:textColor="@color/brand_primary"
-                    app:backgroundTint="@android:color/transparent"
-                    app:cornerRadius="16dp"
-                    app:strokeColor="@color/brand_primary"
-                    app:strokeWidth="1dp" />
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" app:cardBackgroundColor="@color/surface_card" app:cardCornerRadius="24dp" app:cardElevation="4dp" app:strokeColor="@color/surface_outline" app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/overlay_prompt_section_label" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="@string/overlay_prompt_section_hint" android:textColor="@color/text_secondary" android:textSize="12sp" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/reset_overlay_prompt_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:text="@string/reset_overlay_prompt_button" android:textAllCaps="false" android:textColor="@color/text_inverse" app:backgroundTint="@color/brand_primary" app:cornerRadius="12dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="16dp" android:background="@color/surface_outline" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="@string/privacy_policy_label" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="@string/privacy_policy_hint" android:textColor="@color/text_secondary" android:textSize="12sp" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/privacy_policy_button" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:text="@string/privacy_policy_button" android:textAllCaps="false" android:textColor="@color/brand_primary" app:backgroundTint="@color/surface_card_alt" app:cornerRadius="12dp" app:strokeWidth="0dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/overlay_prompt_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface_card"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/surface_outline"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/widget_click_card">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/overlay_prompt_section_label"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/overlay_prompt_section_hint"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/reset_overlay_prompt_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/reset_overlay_prompt_button"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_inverse"
-                    app:backgroundTint="@color/brand_primary"
-                    app:cornerRadius="16dp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </androidx.core.widget.NestedScrollView>
