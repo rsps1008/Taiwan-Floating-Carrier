@@ -9,7 +9,7 @@
   - 提供 widget 顯示條碼與複製載具號碼
   - 透過主畫面調整載具號碼、透明度、關閉行為與 widget 點擊行為
   - 可設定非第一次從桌面開啟 APP 時，直接顯示漂浮載具或顯示設定頁面
-    - widget 點擊可直接開啟漂浮視窗或複製載具號碼，不再導向主畫面
+    - widget 點擊可直接開啟漂浮視窗、複製載具號碼，或開啟使用者選定的其他 App，不再導向主畫面
      - 複製載具號碼只會寫入剪貼簿並透過透明 Activity 顯示 Toast，不會開啟可見的主畫面
      - Android 13+ 的通知權限只影響前景服務通知，不影響 widget 複製的 Toast 回饋
 
@@ -23,7 +23,7 @@
 - `app/src/main/java/com/rsps1008/floatingcarrier/CarrierBarcodeGenerator.kt`
   - 載具條碼生成邏輯
 - `app/src/main/java/com/rsps1008/floatingcarrier/CarrierWidgetProvider.kt`
-  - App Widget 更新、點擊行為、複製載具號碼
+  - App Widget 更新、點擊行為、指定 App 開啟、複製載具號碼
 - `app/src/main/AndroidManifest.xml`
   - 權限、Activity、Service、Widget 註冊
 - `app/src/main/res/`
@@ -43,6 +43,7 @@
   - widget 開啟漂浮視窗需經由 `CarrierWidgetProvider` 廣播，再以 `startForegroundService()` 啟動前景服務
   - widget 複製載具需經由透明 `WidgetCopyActivity` 顯示 Toast，不使用通知列回饋
   - widget 點擊與複製流程是否正常
+  - widget 選定的 App 被卸載或無 launcher 入口時，是否安全回退至漂浮視窗
 - 新增或調整 UI 時，盡量保持現有專案的 Android View/XML 寫法與視覺語言一致。
 
 ## 驗證方式

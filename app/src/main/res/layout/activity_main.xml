@@ -338,12 +338,32 @@
                         android:textColor="@color/text_primary" />
 
                     <RadioButton
+                        android:id="@+id/widget_click_open_selected_app"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_click_open_selected_app"
+                        android:textColor="@color/text_primary" />
+
+                    <RadioButton
                         android:id="@+id/widget_click_copy_carrier"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/widget_click_copy_carrier"
                         android:textColor="@color/text_primary" />
                 </RadioGroup>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/widget_target_app_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/widget_target_app_choose"
+                    android:textAllCaps="false"
+                    android:textColor="@color/brand_primary"
+                    app:backgroundTint="@android:color/transparent"
+                    app:cornerRadius="16dp"
+                    app:strokeColor="@color/brand_primary"
+                    app:strokeWidth="1dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

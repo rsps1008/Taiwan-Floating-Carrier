@@ -62,16 +62,23 @@ class CarrierWidgetProvider : AppWidgetProvider() {
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
                 }
-                else -> {
-                    val showFloatingIntent = Intent(context, CarrierWidgetProvider::class.java).apply {
-                        action = ACTION_SHOW_FLOATING_FROM_WIDGET
+                CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP -> {
+                    val targetPackage = sharedPref.getString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, null)
+                    val targetIntent = targetPackage?.let { context.packageManager.getLaunchIntentForPackage(it) }
+                    if (targetIntent != null) {
+                        targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        PendingIntent.getActivity(
+                            context,
+                            2,
+                            targetIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                    } else {
+                        createShowFloatingPendingIntent(context)
                     }
-                    PendingIntent.getBroadcast(
-                        context,
-                        0,
-                        showFloatingIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
+                }
+                else -> {
+                    createShowFloatingPendingIntent(context)
                 }
             }
 
@@ -79,6 +86,18 @@ class CarrierWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.widget_barcode_image, pendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        private fun createShowFloatingPendingIntent(context: Context): PendingIntent {
+            val showFloatingIntent = Intent(context, CarrierWidgetProvider::class.java).apply {
+                action = ACTION_SHOW_FLOATING_FROM_WIDGET
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                0,
+                showFloatingIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
         }
 
     }

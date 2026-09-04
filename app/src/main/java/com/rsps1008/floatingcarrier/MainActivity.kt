@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -25,6 +26,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 
 class MainActivity : AppCompatActivity() {
+
+    private data class LauncherApp(
+        val packageName: String,
+        val label: String,
+        val icon: android.graphics.drawable.Drawable
+    )
 
     companion object {
         private const val EXTRA_SHOW_SETTINGS = "showUI"
@@ -75,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         val opacityValueText = findViewById<TextView>(R.id.opacity_value_text)
         val closeActionGroup = findViewById<RadioGroup>(R.id.close_action_group)
         val widgetClickGroup = findViewById<RadioGroup>(R.id.widget_click_group)
+        val widgetTargetButton = findViewById<Button>(R.id.widget_target_app_button)
         val startupActionGroup = findViewById<RadioGroup>(R.id.startup_action_group)
         val resetOverlayPromptButton = findViewById<Button>(R.id.reset_overlay_prompt_button)
         val startButton = findViewById<Button>(R.id.start_service_button)
@@ -87,6 +95,10 @@ class MainActivity : AppCompatActivity() {
         val savedWidgetClickAction = sharedPref.getString(
             CarrierPrefs.KEY_WIDGET_CLICK_ACTION,
             CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
+        )
+        val savedWidgetTargetPackage = sharedPref.getString(
+            CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE,
+            null
         )
         val savedStartupAction = sharedPref.getString(
             CarrierPrefs.KEY_STARTUP_ACTION,
@@ -101,7 +113,14 @@ class MainActivity : AppCompatActivity() {
         }
         when (savedWidgetClickAction) {
             CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER -> widgetClickGroup.check(R.id.widget_click_copy_carrier)
+            CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP -> widgetClickGroup.check(R.id.widget_click_open_selected_app)
             else -> widgetClickGroup.check(R.id.widget_click_open_app)
+        }
+        updateWidgetTargetButton(widgetTargetButton, savedWidgetTargetPackage)
+        widgetTargetButton.visibility = if (savedWidgetClickAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
         when (savedStartupAction) {
             CarrierPrefs.VALUE_STARTUP_OPEN_FLOATING -> startupActionGroup.check(R.id.startup_action_open_floating)
@@ -206,12 +225,22 @@ class MainActivity : AppCompatActivity() {
         widgetClickGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedAction = when (checkedId) {
                 R.id.widget_click_copy_carrier -> CarrierPrefs.VALUE_WIDGET_CLICK_COPY_CARRIER
+                R.id.widget_click_open_selected_app -> CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP
                 else -> CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_FLOATING
             }
             sharedPref.edit()
                 .putString(CarrierPrefs.KEY_WIDGET_CLICK_ACTION, selectedAction)
                 .apply()
             CarrierWidgetProvider.updateAllWidgets(this)
+            widgetTargetButton.visibility = if (selectedAction == CarrierPrefs.VALUE_WIDGET_CLICK_OPEN_SELECTED_APP) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+        }
+
+        widgetTargetButton.setOnClickListener {
+            showLauncherAppPicker(sharedPref, widgetTargetButton)
         }
 
         startupActionGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -312,6 +341,60 @@ class MainActivity : AppCompatActivity() {
         } else {
             startService(intent)
         }
+    }
+
+    private fun updateWidgetTargetButton(button: Button, packageName: String?) {
+        val selectedApp = packageName?.let { findLauncherApps().firstOrNull { app -> app.packageName == it } }
+        button.text = selectedApp?.let { getString(R.string.widget_target_app_selected, it.label) }
+            ?: getString(R.string.widget_target_app_choose)
+    }
+
+    private fun showLauncherAppPicker(
+        sharedPref: android.content.SharedPreferences,
+        targetButton: Button
+    ) {
+        val apps = findLauncherApps()
+        if (apps.isEmpty()) {
+            return
+        }
+
+        val currentPackage = sharedPref.getString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, null)
+        val labels = apps.map { it.label }.toTypedArray()
+        val checkedIndex = apps.indexOfFirst { it.packageName == currentPackage }
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.widget_target_app_dialog_title))
+            .setSingleChoiceItems(labels, checkedIndex) { dialog, which ->
+                val selectedApp = apps[which]
+                sharedPref.edit()
+                    .putString(CarrierPrefs.KEY_WIDGET_TARGET_PACKAGE, selectedApp.packageName)
+                    .apply()
+                updateWidgetTargetButton(targetButton, selectedApp.packageName)
+                CarrierWidgetProvider.updateAllWidgets(this)
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.overlay_prompt_cancel), null)
+            .show()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun findLauncherApps(): List<LauncherApp> {
+        val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+        return packageManager.queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL)
+            .asSequence()
+            .mapNotNull { resolveInfo: ResolveInfo ->
+                val activityInfo = resolveInfo.activityInfo ?: return@mapNotNull null
+                val packageName = activityInfo.packageName ?: return@mapNotNull null
+                LauncherApp(
+                    packageName = packageName,
+                    label = resolveInfo.loadLabel(packageManager).toString(),
+                    icon = resolveInfo.loadIcon(packageManager)
+                )
+            }
+            .distinctBy { it.packageName }
+            .sortedBy { it.label.lowercase() }
+            .toList()
     }
 
     private fun isFloatingServiceRunning(): Boolean = AppRuntimeState.isFloatingServiceRunning
